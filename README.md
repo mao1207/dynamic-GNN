@@ -1,3 +1,9 @@
+# revised part
+1. Four model performance metrics that take time into account are added inside utils/metrics.py, and the details are implemented inside get_link_prediction_metrics.
+2. Data is split by time instead of by number of data, implemented in utils/DataLoader.py/TimeDataSplit.
+3. The results visualization part is implemented inside utils/metrics.py/plot_error_timeline.
+4. Follow the steps below to first obtain the corresponding dataset, which can be processed and used to test the performance of different models.
+
 # Towards Better Dynamic Graph Learning: New Architecture and Unified Library
 This repository is built for the Paper [Towards Better Dynamic Graph Learning: New Architecture and Unified Library](https://arxiv.org/abs/2303.13047).
 
