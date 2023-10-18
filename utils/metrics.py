@@ -5,17 +5,8 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 import matplotlib.pyplot as plt
 import datetime
 
+# mlj: Visualization of results 
 def plot_error_timeline(error_dates, filename="error_timeline.png", start_date=None, end_date=None, figsize=(10, 2)):
-    """
-    绘制一个时间轴，并在发生错误的位置上用红点标记。
-    
-    参数:
-    - error_dates: 发生错误的数字列表
-    - filename: 保存图像的文件名
-    - start_date: 时间轴的开始数字 (默认为error_dates中的最小数字)
-    - end_date: 时间轴的结束数字 (默认为error_dates中的最大数字)
-    - figsize: 图表的大小
-    """
     
     fig, ax = plt.subplots(figsize=figsize)
     
@@ -32,6 +23,7 @@ def plot_error_timeline(error_dates, filename="error_timeline.png", start_date=N
     # 保存图形为PNG文件
     plt.savefig(filename, dpi=300)
 
+# mlj: Add indicators
 def get_link_prediction_metrics(predicts: torch.Tensor, labels: torch.Tensor, node_interact_times: np.ndarray):
     """
     get metrics for the link prediction task
