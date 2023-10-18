@@ -60,7 +60,7 @@ effectively and efficiently benefit from longer histories via a patching techniq
 ## Evaluation Tasks
 
 DyGLib supports dynamic link prediction under both transductive and inductive settings with three (i.e., random, historical, and inductive) negative sampling strategies,
-as well as dynamic node classification.
+as well as dynamic node classification. In addition, to further explore the model performance, we added four metrics that will be printed at the end of each epoch.
 
 
 ## Incorporate New Datasets or New Models
