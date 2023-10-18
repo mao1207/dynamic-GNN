@@ -2,6 +2,7 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import random
 import pandas as pd
+import torch
 
 
 class CustomizedDataset(Dataset):
@@ -25,8 +26,30 @@ class CustomizedDataset(Dataset):
     def __len__(self):
         return len(self.indices_list)
 
+class TimeDataSplit(Dataset):
+    def __init__(self, node_interact_times, dataset, batch_size):
+        self.node_interact_times = np.array(node_interact_times)
+        self.begin = np.min(self.node_interact_times)
+        self.end = np.max(self.node_interact_times)
+        self.dataset = np.array(dataset)
+        self.batch_size = batch_size
+        self.interval = 10000
+    
+    def __getitem__(self, index):
+        start_time = self.interval * index + self.begin
+        end_time = self.interval * (index + 1) + self.begin
+        condition = (start_time <= self.node_interact_times) & (self.node_interact_times < end_time)
+        selected_indices = self.dataset[condition]
+        
+        return torch.tensor(selected_indices.squeeze())
 
-def get_idx_data_loader(indices_list: list, batch_size: int, shuffle: bool):
+    def __len__(self):
+        total_intervals = int((max(self.node_interact_times) - min(self.node_interact_times)) / self.interval)
+        return total_intervals if (max(self.node_interact_times) - min(self.node_interact_times)) % self.interval == 0 else total_intervals + 1
+    
+
+
+def get_idx_data_loader(data, indices_list: list, batch_size: int, shuffle: bool):
     """
     get data loader that iterates over indices
     :param indices_list: list, list of indices
@@ -36,10 +59,10 @@ def get_idx_data_loader(indices_list: list, batch_size: int, shuffle: bool):
     """
     dataset = CustomizedDataset(indices_list=indices_list)
 
-    data_loader = DataLoader(dataset=dataset,
-                             batch_size=batch_size,
-                             shuffle=shuffle,
-                             drop_last=False)
+    data_time_split = TimeDataSplit(data.node_interact_times, dataset=dataset,
+                             batch_size=batch_size)
+    data_loader = DataLoader(data_time_split, batch_size=1, shuffle=False)
+
     return data_loader
 
 
@@ -127,6 +150,8 @@ def get_link_prediction_data(dataset_name: str, val_ratio: float, test_ratio: fl
     train_data = Data(src_node_ids=src_node_ids[train_mask], dst_node_ids=dst_node_ids[train_mask],
                       node_interact_times=node_interact_times[train_mask],
                       edge_ids=edge_ids[train_mask], labels=labels[train_mask])
+    
+    print('node_interact_times', train_data.node_interact_times)
 
     # define the new nodes sets for testing inductiveness of the model
     train_node_set = set(train_data.src_node_ids).union(train_data.dst_node_ids)
