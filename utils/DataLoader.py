@@ -26,6 +26,8 @@ class CustomizedDataset(Dataset):
     def __len__(self):
         return len(self.indices_list)
 
+
+# mlj: Split the data set by time
 class TimeDataSplit(Dataset):
     def __init__(self, node_interact_times, dataset, batch_size):
         self.node_interact_times = np.array(node_interact_times)
