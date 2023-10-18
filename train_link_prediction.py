@@ -36,6 +36,7 @@ if __name__ == "__main__":
     node_raw_features, edge_raw_features, full_data, train_data, val_data, test_data, new_node_val_data, new_node_test_data = \
         get_link_prediction_data(dataset_name=args.dataset_name, val_ratio=args.val_ratio, test_ratio=args.test_ratio)
 
+
     # initialize training neighbor sampler to retrieve temporal graph
     train_neighbor_sampler = get_neighbor_sampler(data=train_data, sample_neighbor_strategy=args.sample_neighbor_strategy,
                                                   time_scaling_factor=args.time_scaling_factor, seed=0)
@@ -54,11 +55,13 @@ if __name__ == "__main__":
     new_node_test_neg_edge_sampler = NegativeEdgeSampler(src_node_ids=new_node_test_data.src_node_ids, dst_node_ids=new_node_test_data.dst_node_ids, seed=3)
 
     # get data loaders
-    train_idx_data_loader = get_idx_data_loader(indices_list=list(range(len(train_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
-    val_idx_data_loader = get_idx_data_loader(indices_list=list(range(len(val_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
-    new_node_val_idx_data_loader = get_idx_data_loader(indices_list=list(range(len(new_node_val_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
-    test_idx_data_loader = get_idx_data_loader(indices_list=list(range(len(test_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
-    new_node_test_idx_data_loader = get_idx_data_loader(indices_list=list(range(len(new_node_test_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
+    print('==================================================')
+    print("train_data.node_interact_times", train_data.node_interact_times)
+    train_idx_data_loader = get_idx_data_loader(train_data, indices_list=list(range(len(train_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
+    val_idx_data_loader = get_idx_data_loader(val_data, indices_list=list(range(len(val_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
+    new_node_val_idx_data_loader = get_idx_data_loader(new_node_val_data, indices_list=list(range(len(new_node_val_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
+    test_idx_data_loader = get_idx_data_loader(test_data, indices_list=list(range(len(test_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
+    new_node_test_idx_data_loader = get_idx_data_loader(new_node_test_data, indices_list=list(range(len(new_node_test_data.src_node_ids))), batch_size=args.batch_size, shuffle=False)
 
     val_metric_all_runs, new_node_val_metric_all_runs, test_metric_all_runs, new_node_test_metric_all_runs = [], [], [], []
 
@@ -157,7 +160,7 @@ if __name__ == "__main__":
             train_losses, train_metrics = [], []
             train_idx_data_loader_tqdm = tqdm(train_idx_data_loader, ncols=120)
             for batch_idx, train_data_indices in enumerate(train_idx_data_loader_tqdm):
-                train_data_indices = train_data_indices.numpy()
+                train_data_indices = train_data_indices.squeeze().numpy()
                 batch_src_node_ids, batch_dst_node_ids, batch_node_interact_times, batch_edge_ids = \
                     train_data.src_node_ids[train_data_indices], train_data.dst_node_ids[train_data_indices], \
                     train_data.node_interact_times[train_data_indices], train_data.edge_ids[train_data_indices]
