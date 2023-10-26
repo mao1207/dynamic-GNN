@@ -4,9 +4,16 @@ import numpy as np
 from sklearn.metrics import average_precision_score, roc_auc_score
 import matplotlib.pyplot as plt
 import datetime
+import os
 
-# mlj: Visualization of results 
-def plot_error_timeline(error_dates, filename="error_timeline.png", start_date=None, end_date=None, figsize=(10, 2)):
+def plot_error_timeline(error_dates, epoch, patch, filename="error_timeline", start_date=None, end_date=None, figsize=(10, 2), save_dir="weki_JODIE"):
+    
+    filename = filename + "_epoch_" + str(epoch) + "_patch_" + str(patch) + ".png"
+    
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    
+    full_path = os.path.join(save_dir, filename)
     
     fig, ax = plt.subplots(figsize=figsize)
     
@@ -20,11 +27,9 @@ def plot_error_timeline(error_dates, filename="error_timeline.png", start_date=N
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
     
-    # 保存图形为PNG文件
-    plt.savefig(filename, dpi=300)
+    plt.savefig(full_path, dpi=300)
 
-# mlj: Add indicators
-def get_link_prediction_metrics(predicts: torch.Tensor, labels: torch.Tensor, node_interact_times: np.ndarray):
+def get_link_prediction_metrics(predicts: torch.Tensor, labels: torch.Tensor, node_interact_times: np.ndarray, epoch=0, patch=0, if_print = False):
     """
     get metrics for the link prediction task
     :param predicts: Tensor, shape (num_samples, )
@@ -54,7 +59,8 @@ def get_link_prediction_metrics(predicts: torch.Tensor, labels: torch.Tensor, no
     incorrect_times = node_interact_times[errors == 1]
     num_errors = np.sum(errors)
 
-    plot_error_timeline(incorrect_times, start_date=begin_time, end_date=end_time)
+    # if if_print:
+    #     plot_error_timeline(incorrect_times, start_date=begin_time, end_date=end_time, epoch=epoch, patch=patch)
 
     indices = ((node_interact_times - begin_time) / time_interval).astype(int)
     np.add.at(ada, indices, errors)
@@ -74,8 +80,17 @@ def get_link_prediction_metrics(predicts: torch.Tensor, labels: torch.Tensor, no
     intensity = num_errors/begin_to_end
     aat = np.mean(time_differences)
     mat = min(time_differences)
+    
+    incorrect_times = (incorrect_times - begin_time) / (end_time - begin_time)
+    
+    if len(incorrect_times) == 0:
+        mean_err = 0.5
+        var_err = 0
+    else:
+        mean_err = np.mean(incorrect_times)
+        var_err = np.var(incorrect_times)
 
-    return {'average_precision': average_precision, 'roc_auc': roc_auc, 'intensity': intensity, 'ada': ada, 'aat': aat, 'mat': mat}
+    return {'average_precision': average_precision, 'roc_auc': roc_auc, 'intensity': intensity, 'ada': ada, 'aat': aat, 'mat': mat, 'mean_err': mean_err, 'var_err': var_err}
 
 
 def get_node_classification_metrics(predicts: torch.Tensor, labels: torch.Tensor):
