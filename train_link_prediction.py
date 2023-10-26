@@ -249,11 +249,13 @@ if __name__ == "__main__":
                 predicts = torch.cat([positive_probabilities, negative_probabilities], dim=0)
                 labels = torch.cat([torch.ones_like(positive_probabilities), torch.zeros_like(negative_probabilities)], dim=0)
 
-                loss = loss_func(input=predicts, target=labels)
+
+                link_prediction_metrics_per_epoch = get_link_prediction_metrics(predicts=predicts, labels=labels, node_interact_times=batch_node_interact_times, epoch = epoch, patch = batch_idx, if_print = True)
+                train_metrics.append(link_prediction_metrics_per_epoch)
+                
+                loss = loss_func(input=predicts, target=labels) + link_prediction_metrics_per_epoch['intensity'] + link_prediction_metrics_per_epoch['ada']
 
                 train_losses.append(loss.item())
-
-                train_metrics.append(get_link_prediction_metrics(predicts=predicts, labels=labels, node_interact_times=batch_node_interact_times))
 
                 optimizer.zero_grad()
                 loss.backward()
